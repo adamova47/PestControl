@@ -1,0 +1,4 @@
+# run pipreqs . --force from terminal if you forget to update this file after adding new dependencies
+Requests==2.34.2
+psycopg[binary]==3.3.4
+python-dotenv==1.2.2
