@@ -1,7 +1,6 @@
 import requests
-from datetime import date, timedelta
-from config import LOCATION_ID, LATITUDE, LONGITUDE
-from db import get_connection
+from app.config import LOCATION_ID, LATITUDE, LONGITUDE
+from app.db import get_connection
 
 
 DAILY_VARIABLES = [
@@ -17,11 +16,12 @@ DAILY_VARIABLES = [
 def get_weather_data(latitude, longitude):
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
-        "time": date.today() - timedelta(days=1),
         "latitude": latitude,
         "longitude": longitude,
         "daily": DAILY_VARIABLES,
-        "forecast_days": 1
+        "past_days": 1,
+        "forecast_days": 1,
+        "timezone": "auto",
     }
     response = requests.get(url, params=params)
     response.raise_for_status()
