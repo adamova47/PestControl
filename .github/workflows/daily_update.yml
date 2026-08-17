@@ -28,4 +28,5 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          python update_weather.py
+          cd app
+          python weather.py
