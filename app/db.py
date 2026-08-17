@@ -1,5 +1,5 @@
 import psycopg
-from config import DATABASE_URL
+from app.config import DATABASE_URL
 
 
 def get_connection():
