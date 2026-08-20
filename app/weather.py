@@ -14,7 +14,7 @@ DAILY_VARIABLES = [
 
 
 def get_weather_data(latitude, longitude):
-    url = "https://historical-forecast-api.open-meteo.com/v1/forecast"
+    url = "https://archive-api.open-meteo.com/v1/archive"
     params = {
         "latitude": latitude,
         "longitude": longitude,
