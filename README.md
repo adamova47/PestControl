@@ -118,7 +118,7 @@ erDiagram
 - [x] Configured the GitHub Actions environment to install the Python dependencies and run the weather update
 - [x] Passed the database connection through a GitHub Actions secret
 
-### Species agent
+### Adding frontend
 - [ ]
 
 ## Technology stack
