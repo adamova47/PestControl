@@ -1,7 +1,7 @@
 import sys
-from app.config import LOCATION_ID, LATITUDE, LONGITUDE
-from app.weather import run_daily_weather_update, get_weather_data
-from app.observations import run_observations_update
+from backend.config import LOCATION_ID, LATITUDE, LONGITUDE
+from backend.weather import run_daily_weather_update, get_weather_data
+from backend.observations import run_observations_update
 
 
 if __name__ == "__main__":
