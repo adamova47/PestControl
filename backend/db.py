@@ -1,5 +1,5 @@
 import psycopg
-from app.config import DATABASE_URL
+from backend.config import DATABASE_URL
 
 
 def get_connection():

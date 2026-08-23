@@ -3,9 +3,9 @@ import sys
 from dateutil import parser as date_parser
 sys.stdout.reconfigure(encoding='utf-8')
 
-from app.db import get_connection
-from app.species import fetch_all_species
-from app.locations import get_locations
+from backend.db import get_connection
+from backend.species import fetch_all_species
+from backend.locations import get_locations
 
 
 def fetch_iNaturalist_observations(latitude, longitude, taxon_id, radius_km):

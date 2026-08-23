@@ -1,5 +1,5 @@
 import requests
-from app.db import get_connection
+from backend.db import get_connection
 
 
 def fetch_GBIF_taxon_info(name):

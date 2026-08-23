@@ -1,6 +1,6 @@
 import requests
-from app.config import LOCATION_ID, LATITUDE, LONGITUDE
-from app.db import get_connection
+from backend.config import LOCATION_ID, LATITUDE, LONGITUDE
+from backend.db import get_connection
 
 
 DAILY_VARIABLES = [
