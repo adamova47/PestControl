@@ -12,25 +12,13 @@ import {
 
 import { supabase } from '../lib/supabase';
 
-const TIME_RANGES = {
-    week: 7,
-    month: 30,
-    threeMonths: 90,
-    sixMonths: 180,
-    year: 365,
-};
-
 function WeatherChart() {
     const [weather, setWeather] = useState([]);
-    const [range, setRange] = useState('month');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         async function fetchWeather() {
-            setLoading(true);
-            setError(null);
-
             const { data, error } = await supabase
                 .from('weather')
                 .select('date, temp_max, temp_min, temp_mean')
@@ -49,16 +37,11 @@ function WeatherChart() {
         fetchWeather();
     }, []);
 
-    const filteredWeather =
-        range === 'all'
-            ? weather
-            : weather.slice(-TIME_RANGES[range]);
-
-    const chartData = filteredWeather.map((day) => ({
+    const chartData = weather.map((day) => ({
         date: day.date,
-        max: day.temp_max,
-        mean: day.temp_mean,
-        min: day.temp_min,
+        max: Number(day.temp_max),
+        mean: Number(day.temp_mean),
+        min: Number(day.temp_min),
     }));
 
     if (loading) {
@@ -71,51 +54,46 @@ function WeatherChart() {
 
     return (
         <section>
-        <h2>Temperature history</h2>
+            <h2>Temperature history</h2>
 
-        <div>
-            <button onClick={() => setRange('all')}>All</button>
-            <button onClick={() => setRange('year')}>1 year</button>
-            <button onClick={() => setRange('sixMonths')}>6 months</button>
-            <button onClick={() => setRange('threeMonths')}>3 months</button>
-            <button onClick={() => setRange('month')}>1 month</button>
-            <button onClick={() => setRange('week')}>Week</button>
-        </div>
+            <p>Weather records: {chartData.length}</p>
 
-        <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
+            <ResponsiveContainer width="95%" height={400}>
+                <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="5 5" />
 
-            <XAxis dataKey="date" />
+                    <XAxis dataKey="date" />
 
-            <YAxis />
+                    <YAxis />
 
-            <Tooltip />
+                    <Tooltip />
 
-            <Legend />
+                    <Legend />
 
-            <Line
-                type="monotone"
-                dataKey="max"
-                name="Maximum"
-                dot={false}
-            />
+                    <Line
+                        type="monotone"
+                        stroke='#76b7b2'
+                        dataKey="max"
+                        name="Maximum"
+                        dot={false}
+                    />
 
-            <Line
-                type="monotone"
-                dataKey="mean"
-                name="Mean"
-                dot={false}
-            />
+                    <Line
+                        type="monotone"
+                        dataKey="mean"
+                        name="Mean"
+                        dot={false}
+                    />
 
-            <Line
-                type="monotone"
-                dataKey="min"
-                name="Minimum"
-                dot={false}
-            />
-            </LineChart>
-        </ResponsiveContainer>
+                    <Line
+                        type="monotone"
+                        stroke='#ff9da7'
+                        dataKey="min"
+                        name="Minimum"
+                        dot={false}
+                    />
+                </LineChart>
+            </ResponsiveContainer>
         </section>
     );
 }
