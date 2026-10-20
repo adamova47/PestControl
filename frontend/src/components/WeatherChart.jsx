@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import {
     LineChart,
@@ -12,14 +13,25 @@ import {
 
 import { supabase } from '../lib/supabase';
 
+// CHANGE: Minimum of 6 intervals = 7 daily records.
+const MIN_VISIBLE_SPAN = 6;
+
+function formatDate(dateString) {
+    // CHANGE: Parse date-only strings as local dates to avoid timezone shifts.
+    const [year, month, day] = dateString.split('-').map(Number);
+
+    return new Date(year, month - 1, day).toLocaleDateString(
+        undefined,
+        { day: '2-digit', month: 'short', year: 'numeric' }
+    );
+}
+
 function WeatherChart() {
     const [weather, setWeather] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Zoom window indices (null means showing full dataset)
     const [zoomIndices, setZoomIndices] = useState(null);
-    // Track where the mouse is currently hovering to use as the zoom anchor point
     const [hoveredIndex, setHoveredIndex] = useState(null);
 
     useEffect(() => {
@@ -35,7 +47,7 @@ function WeatherChart() {
                 return;
             }
 
-            setWeather(data);
+            setWeather(data ?? []);
             setLoading(false);
         }
 
@@ -44,21 +56,28 @@ function WeatherChart() {
 
     const fullChartData = weather.map((day) => ({
         date: day.date,
-        max: Number(day.temp_max),
-        mean: Number(day.temp_mean),
-        min: Number(day.temp_min),
+
+        // CHANGE: Preserve database NULLs instead of converting them to 0.
+        max: day.temp_max == null ? null : Number(day.temp_max),
+        mean: day.temp_mean == null ? null : Number(day.temp_mean),
+        min: day.temp_min == null ? null : Number(day.temp_min),
     }));
 
-    // Active bounds calculation
-    const currentStart = zoomIndices ? zoomIndices.start : 0;
-    const currentEnd = zoomIndices ? zoomIndices.end : fullChartData.length - 1;
+    const lastIndex = fullChartData.length - 1;
 
-    const visibleData = fullChartData.slice(currentStart, currentEnd + 1);
+    const currentStart = zoomIndices?.start ?? 0;
+    const currentEnd = zoomIndices?.end ?? lastIndex;
+    const currentSpan = currentEnd - currentStart;
 
-    // Track the active tooltip position to use as our anchor point
-    const handleMouseMove = (e) => {
-        if (e && e.activeTooltipIndex !== undefined) {
-            setHoveredIndex(e.activeTooltipIndex);
+    const visibleData = fullChartData.slice(
+        currentStart,
+        currentEnd + 1
+    );
+
+    const handleMouseMove = (event) => {
+        // CHANGE: activeTooltipIndex is relative to the currently visible data.
+        if (Number.isInteger(Number(event?.activeTooltipIndex))) {
+            setHoveredIndex(Number(event.activeTooltipIndex));
         }
     };
 
@@ -66,50 +85,62 @@ function WeatherChart() {
         setHoveredIndex(null);
     };
 
-    // The core mouse-wheel event listener logic
-    const handleWheel = (e) => {
-        // Prevent the primary browser window from scrolling up/down while inside the chart
-        e.preventDefault(); 
+    const handleWheel = (event) => {
+        event.preventDefault();
 
-        if (fullChartData.length === 0 || hoveredIndex === null) return;
-
-        // Map the relative hovered index back to its position in the full master array
-        const absoluteAnchor = currentStart + hoveredIndex;
-
-        // Zoom direction indicator (negative delta = scroll up = zoom in)
-        const isZoomIn = e.deltaY < 0;
-        
-        // Define steps (zoom 10% of the active window per scroll tick)
-        const currentSpan = currentEnd - currentStart;
-        const step = Math.max(1, Math.round(currentSpan * 0.1));
-
-        let nextStart = currentStart;
-        let nextEnd = currentEnd;
-
-        if (isZoomIn) {
-            // Shrink the window towards the anchor point
-            if (currentSpan <= 6) return; // Keep a minimum window of 6 records
-            
-            // Distribute steps based on where the mouse is positioned relative to the sides
-            const leftRatio = hoveredIndex / (currentSpan || 1);
-            const rightRatio = 1 - leftRatio;
-
-            nextStart = Math.min(absoluteAnchor, currentStart + Math.round(step * leftRatio));
-            nextEnd = Math.max(absoluteAnchor, currentEnd - Math.round(step * rightRatio));
-        } else {
-            // Expand the window outward from the anchor point
-            if (currentStart === 0 && currentEnd === fullChartData.length - 1) return; // Max zoom out reached
-
-            const leftRatio = hoveredIndex / (currentSpan || 1);
-            const rightRatio = 1 - leftRatio;
-
-            nextStart = Math.max(0, currentStart - Math.round(step * leftRatio));
-            nextEnd = Math.min(fullChartData.length - 1, currentEnd + Math.round(step * rightRatio));
+        if (
+            fullChartData.length <= MIN_VISIBLE_SPAN + 1 ||
+            hoveredIndex === null ||
+            event.deltaY === 0
+        ) {
+            return;
         }
 
-        // Apply new slicing instructions
-        if (nextStart === 0 && nextEnd === fullChartData.length - 1) {
-            setZoomIndices(null); // Fully reset state if wide open
+        const isZoomIn = event.deltaY < 0;
+
+        // CHANGE: Keep the pointer's relative position as the zoom anchor.
+        const anchor = currentStart + hoveredIndex;
+        const anchorRatio = currentSpan > 0
+            ? hoveredIndex / currentSpan
+            : 0.5;
+
+        const maxSpan = lastIndex;
+
+        let nextSpan;
+
+        if (isZoomIn) {
+            // CHANGE: Shrink by 20%, respecting the minimum window.
+            if (currentSpan <= MIN_VISIBLE_SPAN) return;
+
+            nextSpan = Math.max(
+                MIN_VISIBLE_SPAN,
+                Math.floor(currentSpan * 0.8)
+            );
+        } else {
+            // CHANGE: Expand by 25%, up to the full dataset.
+            if (currentStart === 0 && currentEnd === lastIndex) return;
+
+            nextSpan = Math.min(
+                maxSpan,
+                Math.ceil(currentSpan * 1.25)
+            );
+        }
+
+        // CHANGE: Calculate both bounds around the same anchor.
+        let nextStart = Math.round(
+            anchor - anchorRatio * nextSpan
+        );
+
+        // CHANGE: Clamp the window to valid dataset boundaries.
+        nextStart = Math.max(
+            0,
+            Math.min(nextStart, lastIndex - nextSpan)
+        );
+
+        const nextEnd = nextStart + nextSpan;
+
+        if (nextStart === 0 && nextEnd === lastIndex) {
+            setZoomIndices(null);
         } else {
             setZoomIndices({ start: nextStart, end: nextEnd });
         }
@@ -117,6 +148,7 @@ function WeatherChart() {
 
     const handleResetZoom = () => {
         setZoomIndices(null);
+        setHoveredIndex(null);
     };
 
     if (loading) {
@@ -127,14 +159,25 @@ function WeatherChart() {
         return <p>Could not load weather data: {error}</p>;
     }
 
+    // CHANGE: Handle an empty query result explicitly.
+    if (fullChartData.length === 0) {
+        return <p>No weather data available.</p>;
+    }
+
     const isZoomed = zoomIndices !== null;
 
     return (
         <section>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2>Temperature history</h2>
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                }}
+            >
+
                 {isZoomed && (
-                    <button 
+                    <button
                         onClick={handleResetZoom}
                         style={{
                             padding: '6px 12px',
@@ -143,7 +186,7 @@ function WeatherChart() {
                             color: '#fff',
                             border: 'none',
                             borderRadius: '4px',
-                            fontWeight: 'bold'
+                            fontWeight: 'bold',
                         }}
                     >
                         Reset Zoom
@@ -152,34 +195,68 @@ function WeatherChart() {
             </div>
 
             <p style={{ fontSize: '0.9em', color: '#666' }}>
-                Records: {fullChartData.length} {isZoomed && `(Showing ${visibleData.length} • Scroll wheel to zoom)`}
+                Records: {fullChartData.length}
+                {isZoomed &&
+                    ` (Showing ${visibleData.length} • Scroll to zoom)`}
             </p>
 
-            {/* 
-              We catch the native onWheel scroll events using a standard wrapper div element
-              to prevent chart rendering logic blockages.
-            */}
-            <div onWheel={handleWheel} style={{ width: '100%' }}>
+            <div
+                onWheel={handleWheel}
+                style={{ width: '100%' }}
+            >
                 <ResponsiveContainer width="100%" height={400}>
-                    <LineChart 
-                        data={visibleData} 
-                        margin={{ top: 5, right: 60, left: 0, bottom: 5 }}
+                    <LineChart
+                        data={visibleData}
+                        margin={{ top: 5, right: 30, left: 5, bottom: 5 }}
                         onMouseMove={handleMouseMove}
                         onMouseLeave={handleMouseLeave}
                     >
                         <CartesianGrid strokeDasharray="5 5" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend verticalAlign="top" height={36} wrapperStyle={{ transform: 'translateX(30px)' }}/>
+
+                        {/* CHANGE: Show compact, readable date labels. */}
+                        <XAxis
+                            dataKey="date"
+                            tickFormatter={(date) =>
+                                new Date(
+                                    ...date.split('-').map(
+                                        (part, index) =>
+                                            Number(part) -
+                                            (index === 1 ? 1 : 0)
+                                    )
+                                ).toLocaleDateString(
+                                    undefined,
+                                    { day: '2-digit', month: 'short' }
+                                )
+                            }
+                            minTickGap={24}
+                        />
+
+                        {/* CHANGE: Make the temperature unit explicit. */}
+                        <YAxis
+                            tickFormatter={(value) => `${value}°C`}
+                        />
+
+                        {/* CHANGE: Format tooltip dates and temperatures. */}
+                        <Tooltip
+                            labelFormatter={(date) => formatDate(date)}
+                            formatter={(value, name) => [
+                                value == null
+                                    ? 'No data'
+                                    : `${Number(value).toFixed(1)}°C`,
+                                name,
+                            ]}
+                        />
+
+                        <Legend verticalAlign="top" height={36} />
 
                         <Line
                             type="monotone"
-                            stroke='#76b7b2'
                             dataKey="max"
                             name="Maximum"
+                            stroke="#76b7b2"
                             dot={false}
-                            isAnimationActive={false} // Disabled for instantaneous frame alignment while scrolling
+                            connectNulls={false}
+                            isAnimationActive={false}
                         />
 
                         <Line
@@ -187,15 +264,17 @@ function WeatherChart() {
                             dataKey="mean"
                             name="Mean"
                             dot={false}
+                            connectNulls={false}
                             isAnimationActive={false}
                         />
 
                         <Line
                             type="monotone"
-                            stroke='#ff9da7'
                             dataKey="min"
                             name="Minimum"
+                            stroke="#ff9da7"
                             dot={false}
+                            connectNulls={false}
                             isAnimationActive={false}
                         />
                     </LineChart>
