@@ -10,16 +10,16 @@ A personal **garden intelligence and monitoring application** designed to help t
 
 ### Project foundation
 
-- [x] Created the Python project structure
-- [x] Split the application into separate modules for configuration, database access, locations, species, observations, and weather
-- [x] Added environment-based configuration using `.env`
-- [x] Connected the application to a PostgreSQL database using `psycopg`
-- [x] Added project dependencies to `requirements.txt`
+- [X] Created the Python project structure
+- [X] Split the application into separate modules for configuration, database access, locations, species, observations, and weather
+- [X] Added environment-based configuration using `.env`
+- [X] Connected the application to a PostgreSQL database using `psycopg`
+- [X] Added project dependencies to `requirements.txt`
 
 ### Database
 
-- [x] Created and populated the database tables needed for locations, species, observations, and weather data
-- [x] Added database connection handling
+- [X] Created and populated the database tables needed for locations, species, observations, and weather data
+- [X] Added database connection handling
 
 ```mermaid
 erDiagram
@@ -86,47 +86,54 @@ erDiagram
 
 ### Species and taxonomy
 
-- [x] Integrated the GBIF species matching API
-- [x] Integrated the iNaturalist taxonomy API
-- [x] Added logic to match species between GBIF and iNaturalist
-- [x] Store scientific names and common names
-- [x] Store GBIF taxon keys and iNaturalist taxon IDs
-- [x] Store a search radius for each species
+- [X] Integrated the GBIF species matching API
+- [X] Integrated the iNaturalist taxonomy API
+- [X] Added logic to match species between GBIF and iNaturalist
+- [X] Store scientific names and common names
+- [X] Store GBIF taxon keys and iNaturalist taxon IDs
+- [X] Store a search radius for each species
 
 ### Observations
 
-- [x] Integrated the iNaturalist observations API
-- [x] Integrated the GBIF occurrence API
-- [x] Added geographic-radius searches around configured locations
-- [x] Added normalization of iNaturalist and GBIF observations into a common format
-- [x] Store observation dates and timestamps, coordinates, the original data source and source ID, available metadata such as individual count, life stage, and notes
-- [x] Observations have duplicate protection using `(source, source_id)` in the database
+- [X] Integrated the iNaturalist observations API
+- [X] Integrated the GBIF occurrence API
+- [X] Added geographic-radius searches around configured locations
+- [X] Added normalization of iNaturalist and GBIF observations into a common format
+- [X] Store observation dates and timestamps, coordinates, the original data source and source ID, available metadata such as individual count, life stage, and notes
+- [X] Observations have duplicate protection using `(source, source_id)` in the database
 
 ### Weather data
 
-- [x] Integrated the Open-Meteo archive API
-- [x] Added collection of daily weather variables relevant to garden monitoring
-- [x] Store daily weather data in PostgreSQL
-- [x] Weather has a duplicate protection using `(location_id, date)` in DB
-- [x] Added a daily weather update function
+- [X] Integrated the Open-Meteo archive API
+- [X] Added collection of daily weather variables relevant to garden monitoring
+- [X] Store daily weather data in PostgreSQL
+- [X] Weather has a duplicate protection using `(location_id, date)` in DB
+- [X] Added a daily weather update function
 
 ### Automation / DevOps
 
-- [x] Added a GitHub Actions workflow for automated weather updates
-- [x] Configured the workflow to run daily at 10:00 in the `Europe/Bratislava` timezone
-- [x] Added manual workflow triggering with `workflow_dispatch`
-- [x] Configured the GitHub Actions environment to install the Python dependencies and run the weather update
-- [x] Passed the database connection through a GitHub Actions secret
+- [X] Added a GitHub Actions workflow for automated weather updates
+- [X] Configured the workflow to run daily at 10:00 in the `Europe/Bratislava` timezone
+- [X] Added manual workflow triggering with `workflow_dispatch`
+- [X] Configured the GitHub Actions environment to install the Python dependencies and run the weather update
+- [X] Passed the database connection through a GitHub Actions secret
 
-### Adding frontend
-- [ ]
+### Frontend and weather visualization
+
+- [X] Initialized a React application using Vite
+- [X] Connected the frontend to Supabase using the Supabase JavaScript client
+- [X] Added a temperature history chart using Recharts
+- [X] Visualized maximum, mean, and minimum temperatures
+- [X] Added interactive chart zooming using the mouse wheel
+- [X] Added a reset-zoom control
+- [X] Added loading and error states for weather data retriev
 
 ## Technology stack
-- **Python**
-- **PostgreSQL**
-- **psycopg**
-- **Requests**
-- **Open-Meteo API**
-- **iNaturalist API**
-- **GBIF API**
-- **GitHub Actions**
+
+- **Frontend:** React, Vite, JavaScript
+- **Visualization:** Recharts
+- **Database:** PostgreSQL, Supabase
+- **Backend and data processing:** Python, psycopg, Requests
+- **Weather data:** Open-Meteo API
+- **Species and observations:** iNaturalist API, GBIF API
+- **Automation:** GitHub Actions
