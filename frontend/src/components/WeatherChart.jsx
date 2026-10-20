@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     LineChart,
     Line,
@@ -7,20 +7,20 @@ import {
     CartesianGrid,
     Tooltip,
     Legend,
-    Brush,
     ResponsiveContainer,
 } from 'recharts';
 
 import { supabase } from '../lib/supabase';
 
-const MIN_BRUSH_SPAN = 6;
-
 function WeatherChart() {
     const [weather, setWeather] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [brushRange, setBrushRange] = useState(null);
-    const brushRangeRef = useRef(null);
+
+    // Zoom window indices (null means showing full dataset)
+    const [zoomIndices, setZoomIndices] = useState(null);
+    // Track where the mouse is currently hovering to use as the zoom anchor point
+    const [hoveredIndex, setHoveredIndex] = useState(null);
 
     useEffect(() => {
         async function fetchWeather() {
@@ -37,48 +37,87 @@ function WeatherChart() {
 
             setWeather(data);
             setLoading(false);
-
-            if (data.length > 0) {
-                const initial = { startIndex: 0, endIndex: data.length - 1 };
-                brushRangeRef.current = initial;
-                setBrushRange(initial);
-            }
         }
 
         fetchWeather();
     }, []);
 
-    const chartData = weather.map((day) => ({
+    const fullChartData = weather.map((day) => ({
         date: day.date,
         max: Number(day.temp_max),
         mean: Number(day.temp_mean),
         min: Number(day.temp_min),
     }));
 
-    function handleBrushChange(range) {
-        if (!range || range.startIndex == null || range.endIndex == null) return;
+    // Active bounds calculation
+    const currentStart = zoomIndices ? zoomIndices.start : 0;
+    const currentEnd = zoomIndices ? zoomIndices.end : fullChartData.length - 1;
 
-        let { startIndex, endIndex } = range;
-        const prev = brushRangeRef.current;
-        const span = endIndex - startIndex;
+    const visibleData = fullChartData.slice(currentStart, currentEnd + 1);
 
-        if (span < MIN_BRUSH_SPAN && prev) {
-            const startDelta = Math.abs(startIndex - prev.startIndex);
-            const endDelta = Math.abs(endIndex - prev.endIndex);
+    // Track the active tooltip position to use as our anchor point
+    const handleMouseMove = (e) => {
+        if (e && e.activeTooltipIndex !== undefined) {
+            setHoveredIndex(e.activeTooltipIndex);
+        }
+    };
 
-            if (startDelta >= endDelta) {
-                // left handle is the one being dragged -> clamp it
-                startIndex = Math.max(0, endIndex - MIN_BRUSH_SPAN);
-            } else {
-                // right handle is the one being dragged -> clamp it
-                endIndex = Math.min(chartData.length - 1, startIndex + MIN_BRUSH_SPAN);
-            }
+    const handleMouseLeave = () => {
+        setHoveredIndex(null);
+    };
+
+    // The core mouse-wheel event listener logic
+    const handleWheel = (e) => {
+        // Prevent the primary browser window from scrolling up/down while inside the chart
+        e.preventDefault(); 
+
+        if (fullChartData.length === 0 || hoveredIndex === null) return;
+
+        // Map the relative hovered index back to its position in the full master array
+        const absoluteAnchor = currentStart + hoveredIndex;
+
+        // Zoom direction indicator (negative delta = scroll up = zoom in)
+        const isZoomIn = e.deltaY < 0;
+        
+        // Define steps (zoom 10% of the active window per scroll tick)
+        const currentSpan = currentEnd - currentStart;
+        const step = Math.max(1, Math.round(currentSpan * 0.1));
+
+        let nextStart = currentStart;
+        let nextEnd = currentEnd;
+
+        if (isZoomIn) {
+            // Shrink the window towards the anchor point
+            if (currentSpan <= 6) return; // Keep a minimum window of 6 records
+            
+            // Distribute steps based on where the mouse is positioned relative to the sides
+            const leftRatio = hoveredIndex / (currentSpan || 1);
+            const rightRatio = 1 - leftRatio;
+
+            nextStart = Math.min(absoluteAnchor, currentStart + Math.round(step * leftRatio));
+            nextEnd = Math.max(absoluteAnchor, currentEnd - Math.round(step * rightRatio));
+        } else {
+            // Expand the window outward from the anchor point
+            if (currentStart === 0 && currentEnd === fullChartData.length - 1) return; // Max zoom out reached
+
+            const leftRatio = hoveredIndex / (currentSpan || 1);
+            const rightRatio = 1 - leftRatio;
+
+            nextStart = Math.max(0, currentStart - Math.round(step * leftRatio));
+            nextEnd = Math.min(fullChartData.length - 1, currentEnd + Math.round(step * rightRatio));
         }
 
-        const next = { startIndex, endIndex };
-        brushRangeRef.current = next;
-        setBrushRange(next);
-    }
+        // Apply new slicing instructions
+        if (nextStart === 0 && nextEnd === fullChartData.length - 1) {
+            setZoomIndices(null); // Fully reset state if wide open
+        } else {
+            setZoomIndices({ start: nextStart, end: nextEnd });
+        }
+    };
+
+    const handleResetZoom = () => {
+        setZoomIndices(null);
+    };
 
     if (loading) {
         return <p>Loading weather data...</p>;
@@ -88,60 +127,80 @@ function WeatherChart() {
         return <p>Could not load weather data: {error}</p>;
     }
 
+    const isZoomed = zoomIndices !== null;
+
     return (
         <section>
-            <h2>Temperature history</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2>Temperature history</h2>
+                {isZoomed && (
+                    <button 
+                        onClick={handleResetZoom}
+                        style={{
+                            padding: '6px 12px',
+                            cursor: 'pointer',
+                            backgroundColor: '#76b7b2',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        Reset Zoom
+                    </button>
+                )}
+            </div>
 
-            <p>Weather records: {chartData.length}</p>
+            <p style={{ fontSize: '0.9em', color: '#666' }}>
+                Records: {fullChartData.length} {isZoomed && `(Showing ${visibleData.length} • Scroll wheel to zoom)`}
+            </p>
 
-            <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={chartData} margin={{ top: 5, right: 60, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="5 5" />
+            {/* 
+              We catch the native onWheel scroll events using a standard wrapper div element
+              to prevent chart rendering logic blockages.
+            */}
+            <div onWheel={handleWheel} style={{ width: '100%' }}>
+                <ResponsiveContainer width="100%" height={400}>
+                    <LineChart 
+                        data={visibleData} 
+                        margin={{ top: 5, right: 60, left: 0, bottom: 5 }}
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={handleMouseLeave}
+                    >
+                        <CartesianGrid strokeDasharray="5 5" />
+                        <XAxis dataKey="date" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend verticalAlign="top" height={36} wrapperStyle={{ transform: 'translateX(30px)' }}/>
 
-                    <XAxis dataKey="date" />
-
-                    <YAxis />
-
-                    <Tooltip />
-
-                    <Legend verticalAlign="top" height={36} wrapperStyle={{ transform: 'translateX(30px)' }}/>
-
-                    <Line
-                        type="monotone"
-                        stroke='#76b7b2'
-                        dataKey="max"
-                        name="Maximum"
-                        dot={false}
-                    />
-
-                    <Line
-                        type="monotone"
-                        dataKey="mean"
-                        name="Mean"
-                        dot={false}
-                    />
-
-                    <Line
-                        type="monotone"
-                        stroke='#ff9da7'
-                        dataKey="min"
-                        name="Minimum"
-                        dot={false}
-                    />
-
-                    {brushRange && (
-                        <Brush
-                            dataKey="date"
-                            height={30}
-                            stroke="#76b7b2"
-                            travellerWidth={10}
-                            startIndex={brushRange.startIndex}
-                            endIndex={brushRange.endIndex}
-                            onChange={handleBrushChange}
+                        <Line
+                            type="monotone"
+                            stroke='#76b7b2'
+                            dataKey="max"
+                            name="Maximum"
+                            dot={false}
+                            isAnimationActive={false} // Disabled for instantaneous frame alignment while scrolling
                         />
-                    )}
-                </LineChart>
-            </ResponsiveContainer>
+
+                        <Line
+                            type="monotone"
+                            dataKey="mean"
+                            name="Mean"
+                            dot={false}
+                            isAnimationActive={false}
+                        />
+
+                        <Line
+                            type="monotone"
+                            stroke='#ff9da7'
+                            dataKey="min"
+                            name="Minimum"
+                            dot={false}
+                            isAnimationActive={false}
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
+            </div>
         </section>
     );
 }
