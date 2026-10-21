@@ -214,12 +214,20 @@ function WeatherForecast() {
                                 </span>
                                 <span>{describeWeather(daily.weather_code[index]).label}</span>
                             </div>
-                            <p className="daily-temperatures">
-                                <strong>
-                                {daily.temperature_2m_max[index] ?? '—'}°
-                                </strong>
-                                <span>{daily.temperature_2m_min[index] ?? '—'}°</span>
-                            </p>
+                            <div className="daily-temperatures">
+                                <div>
+                                    <span className="temperature-label">High</span>
+                                    <strong>
+                                        {daily.temperature_2m_max[index] ?? '—'}°C
+                                    </strong>
+                                </div>
+                                <div>
+                                    <span className="temperature-label">Low</span>
+                                    <strong>
+                                        {daily.temperature_2m_min[index] ?? '—'}°C
+                                    </strong>
+                                </div>
+                            </div>
                             <p className="daily-detail">
                                 Rain: {daily.precipitation_sum[index] ?? '—'} mm
                             </p>
@@ -293,7 +301,7 @@ function WeatherForecast() {
                                 <th>Humidity</th>
                                 <th>Wind</th>
                                 <th>Gusts</th>
-                                <th>Code</th>
+                                <th>Weather</th>
                             </tr>
                         </thead>
                         <tbody>
