@@ -12,6 +12,8 @@ from backend.config import (
     FORECAST_DAYS,
     REQUEST_TIMEOUT_SECONDS,
     FORECAST_CACHE_SECONDS,
+    FRONTEND_ORIGINS,
+    MIN_REFRESH_INTERVAL_SECONDS,
 )
 
 # creates the web app
@@ -20,9 +22,9 @@ app = FastAPI(title="PestControl Weather API")
 # allows the local Vite frontend to call this API during development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=FRONTEND_ORIGINS,
     allow_methods=["GET", "POST"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type"],
 )
 
 # Open-Meteo variables we will want
@@ -62,6 +64,7 @@ CURRENT_VARIABLES = [
 # in-memory cache: stores the last forecast and when it expires
 _cached_forecast = None
 _cache_expires_at = 0
+_last_refresh_at = 0.0
 
 
 # function fetches a fresh forecast from Open-Meteo
@@ -86,6 +89,13 @@ def fetch_forecast():
         )
         response.raise_for_status()
         data = response.json()
+
+        # check that the response contains the expected keys
+        if not all(key in data for key in ("current", "hourly", "daily")):
+            raise HTTPException(
+                status_code=502,
+                detail="Open-Meteo returned incomplete forecast data.",
+            )
 
     except requests.RequestException as error:
         # give the frontend a useful HTTP error if Open-Meteo is unavailable
@@ -143,4 +153,16 @@ def read_forecast():
 # forces a fresh Open-Meteo request and update the cache
 @app.post("/api/forecast/refresh")
 def refresh_forecast():
+    global _last_refresh_at
+
+    # prevent repeated manual refreshes from triggering an upstream request more frequently than the configured interval
+    now = time.monotonic()
+    if now - _last_refresh_at < MIN_REFRESH_INTERVAL_SECONDS:
+        raise HTTPException(
+            status_code=429,
+            detail="Please wait a little before refreshing again.",
+        )
+
+    # record the time of this refresh and fetch a new forecast
+    _last_refresh_at = now
     return get_forecast(force_refresh=True)
