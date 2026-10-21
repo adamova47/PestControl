@@ -45,13 +45,8 @@ DAILY_VARIABLES = [
     "weather_code",
     "temperature_2m_max",
     "temperature_2m_min",
-    "temperature_2m_mean",
     "precipitation_sum",
-    "precipitation_hours",
-    "wind_speed_10m_max",
     "wind_gusts_10m_max",
-    "sunrise",
-    "sunset",
 ]
 
 CURRENT_VARIABLES = [
@@ -60,7 +55,6 @@ CURRENT_VARIABLES = [
     "precipitation",
     "weather_code",
     "wind_speed_10m",
-    "wind_gusts_10m",
 ]
 
 
