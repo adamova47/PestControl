@@ -21,7 +21,9 @@ COPY --chown=appuser:appuser backend/ ./backend/
 USER appuser
 
 # oracle's container will listen on this port
-EXPOSE 8000
 
-# start the FastAPI server and listen on the container network interface
-CMD ["uvicorn", "backend.forecast_api:app", "--host", "0.0.0.0", "--port", "8000"]
+# Render uses port 10000 by default; keep the app listening on the public web-service port
+EXPOSE 10000
+
+# use Render's PORT setting, falling back to 10000 for local Docker runs.
+CMD ["sh", "-c", "uvicorn backend.forecast_api:app --host 0.0.0.0 --port ${PORT:-10000}"]
