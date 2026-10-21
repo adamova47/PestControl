@@ -1,271 +1,361 @@
 .weather-forecast {
-    width: 100%;
-    text-align: left;
-    color: #24352a;
+  width: 100%;
+  color: var(--text);
+  text-align: left;
 }
 
 .forecast-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .forecast-heading h2 {
-    margin: 0 0 4px;
-    font-size: 28px;
-}
-
-.forecast-eyebrow {
-    margin-bottom: 6px;
-    color: #477a5b;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
+  margin: 0 0 5px;
+  color: var(--text-h);
+  font-size: 1.75rem;
 }
 
 .forecast-muted,
 .forecast-footer {
-    color: #68776d;
-    font-size: 14px;
+  color: var(--text-muted);
+  font-size: 0.875rem;
 }
 
+.forecast-footer {
+  margin-top: 24px;
+  padding-bottom: 20px;
+}
+
+/* Refresh buttons use the teal accent without a bright white background. */
 .refresh-button,
 .forecast-status button {
-    border: 1px solid #cbd8ce;
-    border-radius: 10px;
-    padding: 10px 16px;
-    background: #fff;
-    color: #2e5b3c;
-    font: inherit;
-    cursor: pointer;
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    transform 140ms ease;
+}
+
+.refresh-button:hover:not(:disabled),
+.forecast-status button:hover {
+  border-color: var(--accent);
+  background: rgba(103, 232, 196, 0.2);
+}
+
+.refresh-button:active:not(:disabled),
+.forecast-status button:active {
+  transform: translateY(1px);
 }
 
 .refresh-button:disabled {
-    cursor: wait;
-    opacity: 0.6;
+  cursor: wait;
+  opacity: 0.6;
 }
 
+/* Current conditions panel. */
 .current-weather {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 24px;
-    padding: 24px;
-    border: 1px solid #dce6dd;
-    border-radius: 16px;
-    background: #f4f8f3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(103, 232, 196, 0.07),
+      transparent 70%
+    ),
+    var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .current-temperature {
-    margin: 8px 0;
-    color: #244d32;
-    font-size: 56px;
-    font-weight: 600;
-    line-height: 1.1;
+  margin: 8px 0;
+  color: var(--accent);
+  font-size: clamp(2.75rem, 6vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+}
+
+.current-condition {
+  margin-top: 12px;
+  color: var(--text);
+  font-size: 1rem;
 }
 
 .current-details {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(100px, 1fr));
-    gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(100px, 1fr));
+  gap: 20px;
 }
 
 .current-details p {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
 }
 
 .current-details span {
-    color: #68776d;
-    font-size: 13px;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
 }
 
 .current-details strong {
-    font-size: 16px;
+  color: var(--text-h);
+  font-size: 1rem;
+  font-weight: 650;
 }
 
+/* Forecast sections and daily cards. */
 .forecast-section {
-    margin-top: 32px;
+  margin-top: 32px;
 }
 
 .forecast-section h3 {
-    margin-bottom: 8px;
-    color: #24352a;
-    font-size: 20px;
+  margin: 0 0 8px;
+  color: var(--text-h);
+  font-size: 1.25rem;
 }
 
 .daily-forecast {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(125px, 1fr));
-    gap: 12px;
-    margin-top: 16px;
-    overflow-x: auto;
-    padding-bottom: 8px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(125px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-color: var(--border) transparent;
+  scrollbar-width: thin;
 }
 
 .daily-card {
-    min-width: 125px;
-    padding: 16px;
-    border: 1px solid #e0e7e0;
-    border-radius: 12px;
-    background: #fff;
+  min-width: 125px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background:
+    linear-gradient(
+      155deg,
+      rgba(147, 197, 253, 0.035),
+      transparent 60%
+    ),
+    var(--surface);
+  transition:
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.daily-card:hover {
+  border-color: #45617d;
+  background-color: var(--surface-raised);
 }
 
 .daily-date {
-    font-weight: 600;
+  margin-bottom: 0;
+  color: var(--text-h);
+  font-weight: 650;
 }
 
 .daily-code,
 .daily-detail {
-    margin-top: 12px;
-    color: #68776d;
-    font-size: 12px;
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.daily-condition {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  margin-top: 12px;
+  color: var(--text);
+  font-size: 0.8125rem;
+}
+
+.weather-icon {
+  flex-shrink: 0;
+  font-size: 1.5rem;
 }
 
 .daily-temperatures {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    margin-top: 18px;
-    font-size: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 18px;
 }
 
+.daily-temperatures > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.temperature-label,
 .daily-temperatures span {
-    color: #68776d;
+  color: var(--text-muted);
+  font-size: 0.75rem;
 }
 
+.daily-temperatures strong {
+  color: var(--text-h);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+/* Hourly temperature chart. */
 .temperature-chart {
-    width: 100%;
-    height: 280px;
-    margin-top: 16px;
+  width: 100%;
+  height: 280px;
+  margin-top: 16px;
+  padding: 12px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
 }
 
+/* Darken Recharts elements whose colors are set inline in the JSX. */
+.temperature-chart .recharts-cartesian-grid line {
+  stroke: var(--chart-grid) !important;
+}
+
+.temperature-chart .recharts-cartesian-axis-tick-value {
+  fill: var(--text-muted) !important;
+}
+
+.temperature-chart .recharts-cartesian-axis-line,
+.temperature-chart .recharts-cartesian-axis-tick-line {
+  stroke: #52677f !important;
+}
+
+.temperature-chart .recharts-line-curve {
+  stroke: var(--accent) !important;
+}
+
+.temperature-chart .recharts-tooltip-wrapper > div {
+  background: var(--surface-raised) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  box-shadow: var(--shadow);
+  color: var(--text) !important;
+}
+
+.temperature-chart .recharts-tooltip-wrapper * {
+  color: var(--text) !important;
+}
+
+/* Hourly table. */
 .hourly-table-wrapper {
-    width: 100%;
-    margin-top: 16px;
-    overflow-x: auto;
+  width: 100%;
+  margin-top: 16px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  scrollbar-color: var(--border) transparent;
+  scrollbar-width: thin;
 }
 
 .hourly-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    white-space: nowrap;
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.8125rem;
+  white-space: nowrap;
 }
 
 .hourly-table th,
 .hourly-table td {
-    padding: 12px 14px;
-    border-bottom: 1px solid #e5ebe5;
-    text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
 }
 
 .hourly-table th {
-    background: #f4f8f3;
-    color: #425849;
-}
-
-.forecast-status {
-    padding: 32px 16px;
-    text-align: center;
-}
-
-.forecast-error {
-    margin: 12px 0;
-    color: #b42318;
-    font-size: 14px;
-}
-
-.forecast-footer {
-    margin-top: 24px;
-    padding-bottom: 20px;
-}
-
-
-.current-condition {
-    margin-top: 12px;
-    color: #425849;
-    font-size: 16px;
-}
-
-.daily-condition {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 42px;
-    margin-top: 12px;
-    color: #425849;
-    font-size: 13px;
-}
-
-.weather-icon {
-    font-size: 24px;
-}
-
-.daily-temperatures {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
-    margin-top: 18px;
-}
-
-.daily-temperatures > div {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.temperature-label {
-    color: #68776d;
-    font-size: 12px;
-}
-
-.daily-temperatures strong {
-    color: #244d32;
-    font-size: 18px;
-}
-
-.hourly-table {
-    color: #24352a;
-    background: #ffffff;
-}
-
-.hourly-table tbody tr:nth-child(even) {
-    background: #f7faf7;
+  background: var(--surface-raised);
+  color: var(--text-muted);
+  font-weight: 650;
 }
 
 .hourly-table td {
-    color: #24352a;
+  color: var(--text);
 }
 
-.temperature-chart {
-    padding: 12px;
-    box-sizing: border-box;
-    border: 1px solid #dce6dd;
-    border-radius: 12px;
-    background: #ffffff;
+.hourly-table tbody tr:nth-child(even) {
+  background: rgba(147, 197, 253, 0.035);
 }
 
+.hourly-table tbody tr:hover {
+  background: rgba(103, 232, 196, 0.07);
+}
+
+.hourly-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Loading and error states. */
+.forecast-status {
+  padding: 32px 16px;
+  color: var(--text);
+  text-align: center;
+}
+
+.forecast-error {
+  margin: 12px 0;
+  color: #fda4af;
+  font-size: 0.875rem;
+}
 
 @media (max-width: 700px) {
-    .forecast-heading {
-        align-items: flex-start;
-    }
+  .forecast-heading {
+    align-items: flex-start;
+  }
 
-    .current-details {
-        grid-template-columns: repeat(2, minmax(100px, 1fr));
-        width: 100%;
-    }
+  .current-weather {
+    padding: 20px;
+  }
 
-    .daily-forecast {
-        grid-template-columns: repeat(7, 140px);
-    }
+  .current-details {
+    grid-template-columns: repeat(2, minmax(100px, 1fr));
+    width: 100%;
+  }
 
-    .temperature-chart {
-        height: 240px;
-    }
+  .daily-forecast {
+    grid-template-columns: repeat(7, 140px);
+  }
+
+  .temperature-chart {
+    height: 240px;
+  }
+}
+
+@media (max-width: 420px) {
+  .forecast-heading {
+    gap: 10px;
+  }
+
+  .forecast-heading h2 {
+    font-size: 1.45rem;
+  }
+
+  .refresh-button {
+    padding: 8px 10px;
+  }
 }
