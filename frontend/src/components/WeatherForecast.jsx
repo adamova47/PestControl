@@ -12,8 +12,9 @@ import {
 import './WeatherForecast.css';
 
 
-const API_URL =
-    import.meta.env.VITE_WEATHER_API_URL || 'http://127.0.0.1:8000';
+// empty in development - Vite proxies /api to the backend
+// in production, configure VITE_WEATHER_API_URL in Vercel
+const API_URL = (import.meta.env.VITE_WEATHER_API_URL || '').replace(/\/$/, '');
 
 function formatDay(date) {
     // Open-Meteo returns dates as YYYY-MM-DD
