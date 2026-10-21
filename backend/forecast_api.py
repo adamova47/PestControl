@@ -90,7 +90,11 @@ def fetch_forecast():
             params=params,
             timeout=REQUEST_TIMEOUT_SECONDS,
         )
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except requests.HTTPError:
+            print("Open-Meteo error:", response.text)
+            raise
         data = response.json()
 
         # check that the response contains the expected keys
