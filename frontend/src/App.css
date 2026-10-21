@@ -1,0 +1,61 @@
+.app {
+    width: min(1400px, 100%);
+    margin: 0 auto;
+    padding: 32px;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.app-header {
+    margin-bottom: 40px;
+}
+
+.app-header h1 {
+    margin: 8px 0;
+    font-size: 42px;
+    letter-spacing: -1px;
+}
+
+.app-header > p:last-child {
+    color: #68776d;
+}
+
+.app-header h1 {
+    color: #f3f6f3;
+}
+
+.app-header > p:last-child {
+    color: #aebbb2;
+}
+
+/* The forecast section sits on the dark page background. */
+.forecast-section h3 {
+    color: #dce8df;
+}
+
+.app-eyebrow {
+    color: #477a5b;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+}
+
+.history-section {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid #dce6dd;
+}
+
+.history-section h2 {
+    margin-bottom: 24px;
+}
+
+@media (max-width: 600px) {
+    .app {
+        padding: 20px 16px;
+    }
+
+    .app-header h1 {
+        font-size: 32px;
+    }
+}
