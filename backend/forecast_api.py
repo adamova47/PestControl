@@ -1,9 +1,12 @@
 import time
+import logging
 from datetime import datetime, timezone
 
 import requests
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+
+logger = logging.getLogger(__name__)
 
 from backend.config import (
     LATITUDE,
@@ -98,7 +101,9 @@ def fetch_forecast():
             )
 
     except requests.RequestException as error:
-        # give the frontend a useful HTTP error if Open-Meteo is unavailable
+        logger.exception("Open-Meteo request failed")  # NEW: logs the full traceback
+
+        # Existing behavior: keep returning a generic error to the frontend
         raise HTTPException(
             status_code=502,
             detail="Could not retrieve weather data from Open-Meteo.",
