@@ -20,6 +20,19 @@
     color: #68776d;
 }
 
+.app-header h1 {
+    color: #f3f6f3;
+}
+
+.app-header > p:last-child {
+    color: #aebbb2;
+}
+
+/* The forecast section sits on the dark page background. */
+.forecast-section h3 {
+    color: #dce8df;
+}
+
 .app-eyebrow {
     color: #477a5b;
     font-size: 12px;
