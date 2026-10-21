@@ -14,7 +14,6 @@ function App() {
       <WeatherForecast />
 
       <section className="history-section">
-        <h2>Temperature history</h2>
         <WeatherChart />
       </section>
     </main>
