@@ -166,3 +166,8 @@ def refresh_forecast():
     # record the time of this refresh and fetch a new forecast
     _last_refresh_at = now
     return get_forecast(force_refresh=True)
+
+
+@app.get("/healthz")
+def health_check():
+    return {"status": "ok"}
