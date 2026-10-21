@@ -29,6 +29,36 @@ function formatHour(dateTime) {
     return dateTime.split('T')[1]?.slice(0, 5) ?? dateTime;
 }
 
+
+function describeWeather(code) {
+    // WMO weather interpretation codes used by Open-Meteo
+    if (code === 0) return { label: 'Clear sky', icon: '☀️' };
+    if (code === 1) return { label: 'Mainly clear', icon: '🌤️' };
+    if (code === 2) return { label: 'Partly cloudy', icon: '⛅' };
+    if (code === 3) return { label: 'Overcast', icon: '☁️' };
+    if (code === 45 || code === 48) return { label: 'Fog', icon: '🌫️' };
+    if ([51, 53, 55, 56, 57].includes(code)) {
+        return { label: 'Drizzle', icon: '🌦️' };
+    }
+    if ([61, 63, 65, 66, 67].includes(code)) {
+        return { label: 'Rain', icon: '🌧️' };
+    }
+    if ([71, 73, 75, 77].includes(code)) {
+        return { label: 'Snow', icon: '🌨️' };
+    }
+    if ([80, 81, 82].includes(code)) {
+        return { label: 'Rain showers', icon: '🌦️' };
+    }
+    if ([85, 86].includes(code)) {
+        return { label: 'Snow showers', icon: '🌨️' };
+    }
+    if ([95, 96, 99].includes(code)) {
+        return { label: 'Thunderstorm', icon: '⛈️' };
+    }
+    return { label: 'Conditions unavailable', icon: '❔' };
+}
+
+
 function WeatherForecast() {
     const [forecast, setForecast] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -148,8 +178,9 @@ function WeatherForecast() {
                     <p className="current-temperature">
                         {current.temperature_2m ?? '—'}°C
                     </p>
-                    <p className="forecast-muted">
-                        Weather code: {current.weather_code ?? '—'}
+                    <p className="current-condition">
+                        {describeWeather(current.weather_code).icon}{' '}
+                        {describeWeather(current.weather_code).label}
                     </p>
                 </div>
 
@@ -176,9 +207,12 @@ function WeatherForecast() {
                     {daily.time.map((date, index) => (
                         <article className="daily-card" key={date}>
                             <p className="daily-date">{formatDay(date)}</p>
-                            <p className="daily-code">
-                                Code: {daily.weather_code[index] ?? '—'}
-                            </p>
+                            <div className="daily-condition">
+                                <span className="weather-icon">
+                                    {describeWeather(daily.weather_code[index]).icon}
+                                </span>
+                                <span>{describeWeather(daily.weather_code[index]).label}</span>
+                            </div>
                             <p className="daily-temperatures">
                                 <strong>
                                 {daily.temperature_2m_max[index] ?? '—'}°
@@ -203,20 +237,32 @@ function WeatherForecast() {
                 <div className="temperature-chart">
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={next24Hours}>
-                            <CartesianGrid strokeDasharray="3 3" />
+                            <CartesianGrid stroke="#dce6dd" strokeDasharray="3 3" />
                             <XAxis
                                 dataKey="hour"
                                 interval={3}
-                                tick={{ fontSize: 12 }}
+                                tick={{ fontSize: 12, fill: '#425849' }}
+                                axisLine={{ stroke: '#b9c8bd' }}
+                                tickLine={{ stroke: '#b9c8bd' }}
                             />
                             <YAxis
                                 unit="°C"
                                 width={48}
-                                tick={{ fontSize: 12 }}
+                                tick={{ fontSize: 12, fill: '#425849' }}
+                                axisLine={{ stroke: '#b9c8bd' }}
+                                tickLine={{ stroke: '#b9c8bd' }}
                             />
                             <Tooltip
                                 labelFormatter={(label) => `Time: ${label}`}
                                 formatter={(value) => [`${value}°C`, 'Temperature']}
+                                contentStyle={{
+                                    backgroundColor: '#ffffff',
+                                    border: '1px solid #dce6dd',
+                                    borderRadius: '8px',
+                                    color: '#24352a',
+                                }}
+                                labelStyle={{ color: '#24352a' }}
+                                itemStyle={{ color: '#244d32' }}
                             />
                             <Line
                                 type="monotone"
@@ -259,7 +305,10 @@ function WeatherForecast() {
                                 <td>{hour.humidity ?? '—'}%</td>
                                 <td>{hour.wind ?? '—'} km/h</td>
                                 <td>{hour.gusts ?? '—'} km/h</td>
-                                <td>{hour.weatherCode ?? '—'}</td>
+                                <td>
+                                    {describeWeather(hour.weatherCode).icon}{' '}
+                                    {describeWeather(hour.weatherCode).label}
+                                </td>
                                 </tr>
                             ))}
                         </tbody>

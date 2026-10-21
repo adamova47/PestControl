@@ -185,6 +185,72 @@
     padding-bottom: 20px;
 }
 
+
+.current-condition {
+    margin-top: 12px;
+    color: #425849;
+    font-size: 16px;
+}
+
+.daily-condition {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    margin-top: 12px;
+    color: #425849;
+    font-size: 13px;
+}
+
+.weather-icon {
+    font-size: 24px;
+}
+
+.daily-temperatures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 18px;
+}
+
+.daily-temperatures > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.temperature-label {
+    color: #68776d;
+    font-size: 12px;
+}
+
+.daily-temperatures strong {
+    color: #244d32;
+    font-size: 18px;
+}
+
+.hourly-table {
+    color: #24352a;
+    background: #ffffff;
+}
+
+.hourly-table tbody tr:nth-child(even) {
+    background: #f7faf7;
+}
+
+.hourly-table td {
+    color: #24352a;
+}
+
+.temperature-chart {
+    padding: 12px;
+    box-sizing: border-box;
+    border: 1px solid #dce6dd;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+
 @media (max-width: 700px) {
     .forecast-heading {
         align-items: flex-start;
